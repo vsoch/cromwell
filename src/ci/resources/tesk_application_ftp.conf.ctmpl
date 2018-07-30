@@ -1,0 +1,29 @@
+{{with $cromwellFtp := vault (printf "secret/dsde/cromwell/common/cromwell-ftp")}}
+engine {
+  filesystems {
+    ftp {
+      auth {
+        username = {{$cromwellFtp.Data.username}}
+        password = {{$cromwellFtp.Data.password}}
+      }
+    }
+  }
+}
+
+backend {
+  providers {
+    TES {
+      config {
+        filesystems {
+          ftp {
+            auth {
+              username = {{$cromwellFtp.Data.username}}
+              password = {{$cromwellFtp.Data.password}}
+            }
+          }
+        }
+      }
+    }
+  }
+}
+{{end}}

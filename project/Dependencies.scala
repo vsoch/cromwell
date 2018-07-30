@@ -26,6 +26,7 @@ object Dependencies {
   private val errorProneAnnotationsV = "2.0.19"
   private val ficusV = "1.4.1"
   private val fs2V = "0.10.2"
+  private val ftpFsV = "1.2.1"
   private val gaxV = "1.28.0"
   private val googleApiClientV = "1.23.0"
   private val googleCloudComputeV = "0.26.0-alpha"
@@ -307,6 +308,10 @@ object Dependencies {
     "org.typelevel" %% "cats-effect" % catsEffectV,
     "org.apache.commons" % "commons-lang3" % commonsLang3V
   ) ++ catsDependencies ++ configDependencies
+  
+  val ftpFileSystemDependencies = commonDependencies ++ List(
+    "com.github.robtimus" % "ftp-fs" % ftpFsV
+  )
 
   val womDependencies = List(
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingV,

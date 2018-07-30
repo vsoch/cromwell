@@ -111,6 +111,9 @@ lazy val ossFileSystem = (project in file("filesystems/oss"))
 
 lazy val sraFileSystem = (project in file("filesystems/sra"))
   .withLibrarySettings("cromwell-srafilesystem")
+
+lazy val ftpFileSystem = (project in file("filesystems/ftp"))
+  .withLibrarySettings("cromwell-ftpFileSystem", ftpFileSystemDependencies)
   .dependsOn(core)
   .dependsOn(core % "test->test")
 
@@ -200,6 +203,7 @@ lazy val sfsBackend = (project in backendRoot / "sfs")
 lazy val tesBackend = (project in backendRoot / "tes")
   .withLibrarySettings("cromwell-tes-backend", tesBackendDependencies)
   .dependsOn(sfsBackend)
+  .dependsOn(ftpFileSystem)
   .dependsOn(backend % "test->test")
 
 lazy val sparkBackend = (project in backendRoot / "spark")
@@ -223,6 +227,7 @@ lazy val engine = project
   .dependsOn(ossFileSystem)
   .dependsOn(gcsFileSystem)
   .dependsOn(sraFileSystem)
+  .dependsOn(ftpFileSystem)
   .dependsOn(languageFactoryCore)
   .dependsOn(core % "test->test")
   .dependsOn(backend % "test->test")
@@ -239,6 +244,7 @@ lazy val centaurCwlRunner = project
   .dependsOn(cwl)
   .dependsOn(centaur)
   .dependsOn(gcsFileSystem)
+  .dependsOn(ftpFileSystem)
 
 lazy val womtool = project
   .withExecutableSettings("womtool", womtoolDependencies)
@@ -333,6 +339,7 @@ lazy val root = (project in file("."))
   .aggregate(languageFactoryCore)
   .aggregate(awsBackend)
   .aggregate(ossFileSystem)
+  .aggregate(ftpFileSystem)
   .aggregate(server)
   .aggregate(services)
   .aggregate(sfsBackend)

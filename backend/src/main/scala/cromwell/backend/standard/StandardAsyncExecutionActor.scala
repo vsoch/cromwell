@@ -236,8 +236,8 @@ trait StandardAsyncExecutionActor extends AsyncBackendJobExecutionActor with Sta
         |# create the glob control file that will allow for the globbing to succeed even if there is 0 match
         |echo "${controlFileContent.trim}" > $globDirectory/$controlFileName
         |
-        |# symlink all the files into the glob directory
-        |( ln -L ${globFile.value} $globDirectory 2> /dev/null ) || ( ln ${globFile.value} $globDirectory )
+        |# hardlink or symlink all the files into the glob directory
+        |( ln -L ${globFile.value} $globDirectory 2> /dev/null ) || ( ln ${globFile.value} $globDirectory ) || ( ln -s ${globFile.value} $globDirectory )
         |
         |# list all the files (except the control file) that match the glob into a file called glob-[md5 of glob].list
         |ls -1 $globDirectory | grep -v $controlFileName > $globList
