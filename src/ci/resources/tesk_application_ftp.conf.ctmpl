@@ -20,6 +20,10 @@ backend {
               username = {{$cromwellFtp.Data.username}}
               password = {{$cromwellFtp.Data.password}}
             }
+            client {
+              connectionMode = PASSIVE
+              clientConnectionCount = 3
+            }
           }
         }
       }
