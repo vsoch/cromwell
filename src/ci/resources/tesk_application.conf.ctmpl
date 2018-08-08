@@ -13,6 +13,7 @@ backend {
         dockerRoot = "/cromwell-executions"
         endpoint = "{{$cromwellTesk.Data.endpoint}}"
         concurrent-job-limit = 1
+        glob-link-method = "soft"
       }
     }
   }

@@ -16,11 +16,13 @@ cromwell::build::assemble_jars
 CENTAUR_CWL_RUNNER_MODE="tesk"
 CENTAUR_CWL_JAVA_ARGS="-Dconfig.file=${CROMWELL_BUILD_RESOURCES_DIRECTORY}/ftp_centaur_cwl_runner.conf"
 TESK_INPUT_FTP_PREFIX=ftp://ftp.hexdump.org/centaur-cwl-conformance/cwl-inputs/
+CROMWELL_BUILD_CWL_TEST_PARALLELISM=5
 
 # Export variables used in conf files and commands
 export CENTAUR_CWL_RUNNER_MODE
 export CENTAUR_CWL_JAVA_ARGS
 export TESK_INPUT_FTP_PREFIX
+export CROMWELL_BUILD_CWL_TEST_PARALLELISM
 
 shutdown_cromwell() {
     if [ -n "${CROMWELL_PID+set}" ]; then
@@ -54,7 +56,7 @@ cat <<JSON >"${CROMWELL_BUILD_CWL_TEST_INPUTS}"
     "cwl_conformance_test.centaur_cwl_runner": "${CROMWELL_BUILD_CWL_TEST_RUNNER}",
     "cwl_conformance_test.conformance_expected_failures":
         "${CROMWELL_BUILD_RESOURCES_DIRECTORY}/tesk_conformance_expected_failures.txt",
-    "cwl_conformance_test.timeout": 900
+    "cwl_conformance_test.timeout": 2000
 }
 JSON
 
