@@ -111,6 +111,8 @@ lazy val ossFileSystem = (project in file("filesystems/oss"))
 
 lazy val sraFileSystem = (project in file("filesystems/sra"))
   .withLibrarySettings("cromwell-srafilesystem")
+  .dependsOn(core)
+  .dependsOn(core % "test->test")
 
 lazy val ftpFileSystem = (project in file("filesystems/ftp"))
   .withLibrarySettings("cromwell-ftpFileSystem", ftpFileSystemDependencies)

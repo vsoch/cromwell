@@ -26,6 +26,7 @@ case class FtpPath(ftpPath: java.nio.file.Path) extends Path {
       this
   }
 
+  // There's no need to set explicit permissions on FTP
   override def createPermissionedDirectories(): this.type = {
     if (!exists) {
       try {
@@ -34,11 +35,6 @@ case class FtpPath(ftpPath: java.nio.file.Path) extends Path {
       catch {
         // Race condition that's particularly likely with scatters.  Ignore.
         case _: FileAlreadyExistsException =>
-        // The GCS filesystem does not support setting permissions and will throw an `UnsupportedOperationException`.
-        // Evaluating expressions like `write_lines` in a command block will cause the above permission-manipulating
-        // code to run against a GCS Path. Fortunately creating directories in GCS is also unnecessary, so this
-        // exception type is just ignored.
-        case _: UnsupportedOperationException =>
       }
     }
     this

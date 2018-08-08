@@ -1,16 +1,20 @@
 package cromwell.filesystems.ftp
 
+import java.util.Collections
+
 import cats.syntax.apply._
 import cats.syntax.validated._
 import com.typesafe.config.Config
 import common.validation.ErrorOr.ErrorOr
 import common.validation.Validation._
+
+import scala.util.Try
 import cromwell.core.WorkflowOptions
 import net.ceedubs.ficus.Ficus._
+import scala.collection.JavaConverters._
+import scala.concurrent.duration._
 
-import scala.concurrent.duration.{FiniteDuration, _}
-
-case class FtpConfiguration(ftpCredentials: FtpCredentials, cacheTTL: FiniteDuration)
+case class FtpConfiguration(ftpCredentials: FtpCredentials, cacheTTL: FiniteDuration, clientConfig: java.util.Map[String, Object] = Collections.emptyMap())
 
 object FtpConfiguration {
   // Needs to be sufficiently large such that no job can be still running when the filesystem is closed and evicted from the cache
@@ -26,8 +30,15 @@ object FtpConfiguration {
     }
     
     val cacheTTL = conf.getAs[FiniteDuration]("cacheTTL").getOrElse(defaultCacheTTL)
+    
+    val customConfig: Try[java.util.Map[String, Object]] = Try{conf.getAs[Config]("client") match {
+      case Some(config) => config.entrySet().asScala
+        .map({ element => element.getKey -> element.getValue.unwrapped() })
+        .toMap.asJava
+      case None => Collections.emptyMap[String, Object]()
+    }}
 
-    FtpConfiguration(credentials.unsafe("FTP configuration is not valid"), cacheTTL)
+    FtpConfiguration(credentials.unsafe("FTP configuration is not valid"), cacheTTL, customConfig.get)
   }
 
   def apply(options: WorkflowOptions): Option[FtpConfiguration] = {
