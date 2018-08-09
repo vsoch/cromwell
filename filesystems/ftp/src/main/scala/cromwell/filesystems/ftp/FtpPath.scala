@@ -15,9 +15,19 @@ case class FtpPath(ftpPath: java.nio.file.Path) extends Path {
     new URI(uri.getScheme, null, uri.getHost, uri.getPort, uri.getPath, uri.getQuery, uri.getFragment).toString
   }
 
-  override def pathWithoutScheme = nioPath.toUri.getPath
+  override def pathWithoutScheme = {
+    Option(nioPath.toUri.getPath).map(_.stripPrefix("/")).getOrElse("")
+  }
 
-  override def name = ftpPath.getFileName.toUri.getPath.stripPrefix("/")
+  override def name = {
+    val nonNullName = for {
+      fileName <- Option(ftpPath.getFileName)
+      uri = fileName.toUri
+      path <- Option(uri.getPath)
+    } yield path.stripPrefix("/")
+
+    nonNullName.getOrElse("")
+  }
 
   override def createDirectories()(implicit attributes: Attributes = Attributes.default): this.type = try {
     super.createDirectories()

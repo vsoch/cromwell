@@ -14,8 +14,7 @@ import common.validation.ErrorOr.ErrorOr
 import cromwell.backend.BackendJobLifecycleActor
 import cromwell.backend.async.{ExecutionHandle, FailedNonRetryableExecutionHandle, PendingExecutionHandle}
 import cromwell.backend.impl.tes.TesResponseJsonFormatter._
-import cromwell.backend.standard.GlobLinkMethod.GlobLinkMethod
-import cromwell.backend.standard.{GlobLinkMethod, StandardAsyncExecutionActor, StandardAsyncExecutionActorParams, StandardAsyncJob}
+import cromwell.backend.standard.{StandardAsyncExecutionActor, StandardAsyncExecutionActorParams, StandardAsyncJob}
 import cromwell.core.path.{DefaultPathBuilder, Path}
 import cromwell.core.retry.SimpleExponentialBackoff
 import wom.values.WomFile
@@ -65,8 +64,6 @@ class TesAsyncBackendJobExecutionActor(override val standardParams: StandardAsyn
     maxInterval = 30 seconds,
     multiplier = 1.1
   )
-
-  override def globLinkMethod: GlobLinkMethod = tesConfiguration.globLinkMethod.getOrElse(GlobLinkMethod.Hard)
 
   private lazy val realDockerImageUsed: String = jobDescriptor.maybeCallCachingEligible.dockerHash.getOrElse(runtimeAttributes.dockerImage)
   override lazy val dockerImageUsed: Option[String] = Option(realDockerImageUsed)

@@ -21,7 +21,6 @@ import cromwell.backend.BackendLifecycleActor.AbortJobCommand
 import cromwell.backend.OutputEvaluator._
 import cromwell.backend.async.AsyncBackendJobExecutionActor._
 import cromwell.backend.async._
-import cromwell.backend.standard.GlobLinkMethod.GlobLinkMethod
 import cromwell.backend.standard.StandardAdHocValue._
 import cromwell.backend.validation._
 import cromwell.backend.{Command, OutputEvaluator, _}
@@ -213,10 +212,8 @@ trait StandardAsyncExecutionActor extends AsyncBackendJobExecutionActor with Sta
   def globScripts(globFiles: Traversable[WomGlobFile]): String =
     globFiles map globScript mkString "\n"
 
-  def globLinkMethod: GlobLinkMethod = GlobLinkMethod.Hard
-
   /**
-    * Returns the shell scripting for hard linking a glob results using ln.
+    * Returns the shell scripting for linking a glob results.
     *
     * @param globFile The glob.
     * @return The shell scripting.
@@ -228,10 +225,12 @@ trait StandardAsyncExecutionActor extends AsyncBackendJobExecutionActor with Sta
     val globList = parentDirectory./(s"$globDir.list")
     val controlFileName = "cromwell_glob_control_file"
     val absoluteGlobValue = commandDirectory.resolve(globFile.value).pathAsString
-    val linkCommand = globLinkMethod match {
-      case GlobLinkMethod.Hard => s"( ln -L $absoluteGlobValue $globDirectory 2> /dev/null ) || ( ln $absoluteGlobValue $globDirectory )"
-      case GlobLinkMethod.Soft => s"( ln -s $absoluteGlobValue $globDirectory )"
-    }
+    val globLinkCommand: String = configurationDescriptor.backendConfig.getAs[String]("glob-link-command")
+      .map("( " + _ + " )")
+      .getOrElse("( ln -L GLOB_PATTERN GLOB_DIRECTORY 2> /dev/null ) || ( ln GLOB_PATTERN GLOB_DIRECTORY )")
+      .replaceAll("GLOB_PATTERN", absoluteGlobValue)
+      .replaceAll("GLOB_DIRECTORY", globDirectory.pathAsString)
+
     val controlFileContent =
       """This file is used by Cromwell to allow for globs that would not match any file.
         |By its presence it works around the limitation of some backends that do not allow empty globs.
@@ -245,7 +244,7 @@ trait StandardAsyncExecutionActor extends AsyncBackendJobExecutionActor with Sta
         |echo "${controlFileContent.trim}" > $globDirectory/$controlFileName
         |
         |# hardlink or symlink all the files into the glob directory
-        |$linkCommand
+        |$globLinkCommand
         |
         |# list all the files (except the control file) that match the glob into a file called glob-[md5 of glob].list
         |ls -1 $globDirectory | grep -v $controlFileName > $globList
