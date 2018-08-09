@@ -21,8 +21,8 @@ object FtpPathBuilderFactory {
 }
 
 class FtpPathBuilderFactory(globalConfig: Config, instanceConfig: Config) extends PathBuilderFactory {
-  private [ftp] val configFtpConfiguration = FtpConfiguration(instanceConfig)
-  private val ftpFileSystemProvider = new FTPFileSystemProvider()
+  private [ftp] lazy val configFtpConfiguration = FtpConfiguration(instanceConfig)
+  private lazy val ftpFileSystemProvider = new FTPFileSystemProvider()
 
   private [ftp] lazy val cacheCleanUpInterval = 1.hour
   private [ftp] lazy val scheduler = Executors.newScheduledThreadPool(1)
@@ -32,7 +32,7 @@ class FtpPathBuilderFactory(globalConfig: Config, instanceConfig: Config) extend
       ()
     }
   }
-  private [ftp] val cacheLoader = new CacheLoader[FileSystemKey, FileSystem] {
+  private [ftp] lazy val cacheLoader = new CacheLoader[FileSystemKey, FileSystem] {
     override def load(key: FileSystemKey) = {
       val uri = new URI(ftpFileSystemProvider.getScheme, null, key.host, -1, null, null, null)
       makeFilesystem(uri, key.configuration.fTPEnvironment)
@@ -49,7 +49,7 @@ class FtpPathBuilderFactory(globalConfig: Config, instanceConfig: Config) extend
 
   private [ftp] lazy val ftpCacheBuilder: CacheBuilder[FileSystemKey, FileSystem] = makeCacheBuilder
 
-  private [ftp] val ftpCache: LoadingCache[FileSystemKey, FileSystem] = ftpCacheBuilder.build[FileSystemKey, FileSystem](cacheLoader)
+  private [ftp] lazy val ftpCache: LoadingCache[FileSystemKey, FileSystem] = ftpCacheBuilder.build[FileSystemKey, FileSystem](cacheLoader)
 
   private [ftp] var cleanUpCancellable = initPeriodicCleanup()
 
