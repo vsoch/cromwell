@@ -2,6 +2,7 @@
 
 set -e
 export CROMWELL_BUILD_SUPPORTS_CRON=true
+export CROMWELL_BUILD_REQUIRES_SECURE=true
 # import in shellcheck / CI / IntelliJ compatible ways
 # shellcheck source=/dev/null
 source "${BASH_SOURCE%/*}/test.inc.sh" || source test.inc.sh
@@ -9,8 +10,6 @@ source "${BASH_SOURCE%/*}/test.inc.sh" || source test.inc.sh
 cromwell::build::setup_common_environment
 
 cromwell::build::setup_centaur_environment
-
-cromwell::build::setup_secure_resources
 
 cromwell::build::assemble_jars
 
@@ -37,12 +36,23 @@ if [ "${CROMWELL_BUILD_IS_CRON}" = "true" ]; then
     export CENTAUR_READ_LINES_LIMIT
 fi
 
+PRIVATE_DOCKER_OPTIONS_FILENAME="private_docker_papi_v2_usa.options"
+mkdir -p "${CROMWELL_BUILD_CENTAUR_STANDARD_RENDERED}"
+if [ -f "${CROMWELL_BUILD_RESOURCES_DIRECTORY}/${PRIVATE_DOCKER_OPTIONS_FILENAME}" ]; then
+    cp \
+        "${CROMWELL_BUILD_RESOURCES_DIRECTORY}/${PRIVATE_DOCKER_OPTIONS_FILENAME}" \
+        "${CROMWELL_BUILD_CENTAUR_STANDARD_RENDERED}"
+else
+    echo '{}' > "${CROMWELL_BUILD_CENTAUR_STANDARD_RENDERED}/${PRIVATE_DOCKER_OPTIONS_FILENAME}"
+fi
+
 # Excluded tests:
 # docker_hash_dockerhub_private: https://github.com/broadinstitute/cromwell/issues/3587
 
 centaur/test_cromwell.sh \
     -j "${CROMWELL_BUILD_JAR}" \
     -c "${CROMWELL_BUILD_RESOURCES_DIRECTORY}/papi_v2_application.conf" \
+    -n "${CROMWELL_BUILD_RESOURCES_DIRECTORY}/centaur_application.conf" \
     -p 100 \
     -g \
     -e localdockertest \
